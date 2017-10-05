@@ -21,4 +21,5 @@ net = Model(input_shape,layer_type,layer_activation,common_param)
 net.initialize_layers()
 
 """Feed Forwarding in the CNN"""
-net.feed_forward()
+for i in range(0,input_shape[0]):
+    net.feed_forward(training_set[i])
