@@ -6,7 +6,7 @@ class Parameters(object):
         """Initializing essential parameters"""
         self.no_of_classes = 9
         self.count_of_each_class = 200
-        self.learning_rate = 0.1
+        self.learning_rate = 0.01
         self.momentum_rate = 0.1
         self.epochs = 30
         self.stride = 1
