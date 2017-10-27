@@ -22,8 +22,8 @@ class Parameters(object):
         self.pooling_layer_size = 0
         self.fully_connected_layer_size = 100
         self.output_layer_size = self.no_of_classes
-        self.weight_minimum_limit = 0.0
-        self.weight_maximum_limit = 0.5
+        self.weight_minimum_limit = -0.05
+        self.weight_maximum_limit = 0.05
 
     def initialize_layer_parameters(self,input_shape):
         """Initializing layer parameters"""    
