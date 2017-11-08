@@ -4,15 +4,17 @@ class Parameters(object):
 
     def __init__(self):    
         """Initializing essential parameters"""
+        self.x_axis = 0
+        self.y_axis = 0
         self.no_of_classes = 9
-        self.count_of_each_class = 200
+        self.count_of_each_class = 30
         self.learning_rate = 0.01
         self.momentum_rate = 0.1
         self.epochs = 30
         self.stride = 1
         self.padding = 0
         self.batch_size = 10
-        self.minimum_error = 0.1
+        self.minimum_error = 0.005
         self.maximum_iteration = 500
         self.input_layer_size = 0
         self.convolution_kernel_size = 0
@@ -22,8 +24,9 @@ class Parameters(object):
         self.pooling_layer_size = 0
         self.fully_connected_layer_size = 100
         self.output_layer_size = self.no_of_classes
-        self.weight_minimum_limit = -0.05
-        self.weight_maximum_limit = 0.05
+        self.weight_minimum_limit = -0.1
+        self.weight_maximum_limit = 0.1
+        self.final_result_set = []
 
     def initialize_layer_parameters(self,input_shape):
         """Initializing layer parameters"""    
