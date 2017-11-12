@@ -71,25 +71,50 @@ def load_data(common_param):
     """Scaling the reflectance values to -1.0 to +1.0"""
     
     """Finding the high and low values for scaling"""
-    max_reflectance_val = float(np.amax(data_set))
-    min_reflectance_val = float(np.amin(data_set))
+    #max_reflectance_val = float(np.amax(data_set))
+    #min_reflectance_val = float(np.amin(data_set))
     #print (max_reflectance_val)
     #print (min_reflectance_val)
-
-    """Actual scaling"""
-    data_set = np.float16(data_set)
+    
+    """Actual scaling
+    data_set = np.float64(data_set)
+    mean = np.mean(data_set)
+    standard_deviation = np.std(data_set)
     for i in range(0,data_set_shape_tuple[0]):
         for j in range(0,data_set_shape_tuple[1]):
             for k in range(0,data_set_shape_tuple[2]):
-                """Scaling Formula 1
+                Scaling Formula 1
                 Formula A = (A / max)*2 - 1
-                data_set[i][j][k] = (data_set[i][j][k] / max_reflectance_val) * 2.0 - 1.0"""
+                data_set[i][j][k] = (data_set[i][j][k] / max_reflectance_val) * 2.0 - 1.0
 
-                """Scaling Formula 2
-                Formula (b-a) + ((x - minx)/(maxx - minx)) + a"""
+                Scaling Formula 2
+                Formula (b-a) + ((x - minx)/(maxx - minx)) + a
                 data_set[i][j][k] = 2*((data_set[i][j][k] - min_reflectance_val)/(max_reflectance_val - min_reflectance_val)) - 1
-                #print (data_set[i][j][k])
-    
+
+                Normalization Formula 3 (Min - max normalization)
+                Xnormalized = (Xcurrent - ((Xmax + Xmin)/2))/((Xmax - Xmin)/2)
+                data_set[i][j][k] = ((data_set[i][j][k] - ((max_reflectance_val + min_reflectance_val)/2))/((max_reflectance_val - min_reflectance_val)/2))
+
+                Guassian normalization
+                Xnormalized = Xcurrent - mean / standard deviation
+                data_set[i][j][k] = (data_set[i][j][k] - mean)/standard_deviation
+                print (data_set[i][j][k])
+
+    #print ("Mean : ", (sum_value / (data_set_shape_tuple[0]*data_set_shape_tuple[1]*data_set_shape_tuple[2])))
+    print ("Mean : ", np.mean(data_set))
+    print ("std : ",np.std(data_set))
+    """
+
+    """Normalizing the pixels locally within the band values"""
+    data_set = np.float64(data_set)
+    for i in range(0,data_set_shape_tuple[0]):
+        for j in range(0,data_set_shape_tuple[1]):
+            temp = data_set[i][j]
+            min_val = float(np.amin(data_set[i][j]))
+            max_val = float(np.amax(data_set[i][j]))
+            for k in range(0,data_set_shape_tuple[2]):
+                data_set[i][j][k] = ((data_set[i][j][k] - ((max_val + min_val)/2))/((max_val - min_val)/2))
+                
     row_count_1 = 0
     row_count_2 = 0
     for row in range(0,ground_truth_set.shape[0]):
@@ -105,12 +130,27 @@ def load_data(common_param):
             test_truth_set[row_count_2] = ground_truth_set[row][column]
             row_count_2 += 1
 
-    print (row_count_2)   
+    """Normalizing the training set
+    mean = np.mean(training_set)
+    standard_deviation = np.std(training_set)
+    for row in range(0,training_set.shape[0]):
+        for column in range(0,training_set.shape[1]):
+            training_set[row][column] = (training_set[row][column] - mean)/standard_deviation
+    """
+    """Normalizing the test set
+    mean = np.mean(test_set)
+    standard_deviation = np.std(test_set)
+    for row in range(0,test_set.shape[0]):
+        for column in range(0,test_set.shape[1]):
+            test_set[row][column] = (test_set[row][column] - mean)/standard_deviation
+    """
+    #print (row_count_2)   
     """Checking the generated data 
     for row in range(0,common_param.no_of_classes*common_param.count_of_each_class):
         print (test_set[row][0] ," "),
         print (test_truth_set[row])
     """
+                   
     return training_set,validation_set,test_set,test_truth_set
 
 def shuffle_in_unison(a, b):

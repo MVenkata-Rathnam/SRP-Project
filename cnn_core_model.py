@@ -13,6 +13,7 @@ class Model(object):
         self.layer_activation = layer_activation
         self.common_param = common_param
         self.total_error = 0.0
+        self.accuracy = 0.0
 
     """Instantiating the layers"""
     def initialize_layers(self):
@@ -64,6 +65,11 @@ class Model(object):
             else:
                 self.layers[i].back_propagate(self.layers[i-1])
 
+    """Updating the bias value of all the neurons"""
+    def bias_updation(self):
+        for i in range(len(self.layers)):
+            self.layers[i].bias_updation()
+
     """Implementing the gradient descent"""
     def gradient_descent(self,input_data,ground_truth_data):
         no_of_samples = input_data.shape[0]
@@ -79,6 +85,7 @@ class Model(object):
                     break
         self.total_error = self.total_error + error
         self.weight_updation()
+        self.bias_updation()
         return error
 
     """Initializing the gradient of all the neurons for the batch"""
@@ -86,7 +93,10 @@ class Model(object):
         for i in range(0,len(self.layers)):
             for j in range(0,len(self.layers[i].neurons)):
                 self.layers[i].neurons[j].gradient = 0.0
-    
+            if(isinstance(self.layers[i],ConvolutionLayer)):
+                for k in range(0,len(self.layers[i].dendrons)):
+                    self.layers[i].dendrons[k].dweight = 0.0
+             
     """Defining the cost function"""
     def cost_function(self,output_value):
         return (-1/self.common_param.batch_size)*math.log(output_value)
@@ -97,6 +107,7 @@ class Neuron(object):
         self.output_value = 0.0
         self.error = 0.0
         self.gradient=0.0
+        self.bias = 1.0
 
 """Class Model for Dendron"""
 class Connection(object):
@@ -142,8 +153,10 @@ class ConvolutionLayer(object):
                 sum_of_multiple = 0.0
                 for k in range(j,j+self.common_param.convolution_kernel_size):
                     element_wise_multiple = input_layer[j]*self.dendrons[k].weight
+                    #print (input_layer[j] , " ", self.dendrons[k].weight, " " , element_wise_multiple)
                     sum_of_multiple = sum_of_multiple + element_wise_multiple
                 #print ("Convolution output " , sum_of_multiple)
+                sum_of_multiple += self.neurons[neuron_index].bias
                 self.neurons[neuron_index].output_value = self.tanh(sum_of_multiple)
                 #print ("Convolution output " , self.neurons[neuron_index].output_value)
                 neuron_index += 1
@@ -165,15 +178,21 @@ class ConvolutionLayer(object):
 
     """Updating the weight"""
     def weight_updation(self):
+        print (self.input_size[0])
         for i in range(0,len(self.dendrons)):
-            self.dendrons[i].weight -=  self.dendrons[i].dweight/self.common_param.batch_size
+            self.dendrons[i].weight -=  self.dendrons[i].dweight/(self.common_param.batch_size*(self.input_size[0] - self.common_param.convolution_kernel_size))
             #print ("Convolution Layer dweight and weight : ", self.dendrons[i].dweight, self.dendrons[i].weight)
+
+    """Updating the bias"""
+    def bias_updation(self):
+        for i in range(0,len(self.neurons)):
+            self.neurons[i].bias -= self.common_param.learning_rate*(self.neurons[i].gradient/self.common_param.batch_size)
 
     """Defining the activation function"""                
     def tanh(self, neuron_value):
-        return math.tanh(neuron_value)
+        #return math.tanh(neuron_value)
         #print (neuron_value)
-        #return (math.exp(neuron_value) - math.exp(-neuron_value))/(math.exp(neuron_value) + math.exp(-neuron_value))
+        return (math.exp(neuron_value) - math.exp(-neuron_value))/(math.exp(neuron_value) + math.exp(-neuron_value))
 
     """Defining the derivative of the activation function"""
     def tanh_deriv(self,neuron_value):
@@ -223,6 +242,10 @@ class PoolingLayer(object):
                     #print ("Neuron Index " , j , "Convolution Neuron Gradient : " , input_layer.neurons[j].output_value, " ", self.neurons[dendron_index].output_value)
                     dendron_index += 1
                     break;
+    """Updating the bias"""
+    def bias_updation(self):
+        for i in range(0,len(self.neurons)):
+            self.neurons[i].bias -= self.common_param.learning_rate*(self.neurons[i].gradient/self.common_param.batch_size)
                 
 """Class Model for Fully Connected Layer"""
 class FullyConnectedLayer(object):
@@ -255,6 +278,7 @@ class FullyConnectedLayer(object):
             for j in range(0,self.input_size):
                 net_output += input_layer.neurons[j].output_value * self.dendrons[dendron_index].weight
                 dendron_index += 1
+            self.neurons[neuron_index].output_value += self.neurons[neuron_index].bias
             self.neurons[neuron_index].output_value = self.tanh(net_output)
             neuron_index += 1
 
@@ -273,6 +297,11 @@ class FullyConnectedLayer(object):
             for j in range(0,len(input_layer.neurons)):
                 self.dendrons[dendron_index].weight -= self.common_param.learning_rate*(input_layer.neurons[j].output_value*(input_layer.neurons[j].gradient/self.common_param.batch_size))
                 dendron_index += 1
+                
+    """Updating the bias"""
+    def bias_updation(self):
+        for i in range(0,len(self.neurons)):
+            self.neurons[i].bias -= self.common_param.learning_rate*(self.neurons[i].gradient/self.common_param.batch_size)
 
     """Defining the activation function"""
     def tanh(self,neuron_value):
@@ -316,16 +345,22 @@ class OutputLayer(object):
             for j in range(0,self.input_size):
                 net_output += input_layer.neurons[j].output_value * self.dendrons[dendron_index].weight
                 dendron_index += 1
+            self.neurons[neuron_index].output_value += self.neurons[neuron_index].bias
             self.neurons[neuron_index].output_value = net_output
             neuron_index += 1
         #print ("Output Value")
         tempMax = -1.0
+        """for i in range(0,self.output_size):
+            self.neurons[i].output_value = self.sigmoid(self.neurons[i].output_value)
+        """    
         for i in range(0,self.output_size):
+            #print ("Actual Output : " , self.neurons[i].output_value)
             self.neurons[i].output_value = self.softmax(self.neurons[i].output_value)
-            print ("Actual Output : " , self.neurons[i].output_value)
+            print ("Probability : " , self.neurons[i].output_value)
             if( self.neurons[i].output_value > tempMax):
                 pos = i
                 tempMax = self.neurons[i].output_value
+            #self.neurons[i].output_value = self.softmax(self.neurons[i].output_value)
         self.predicted_output = (pos + 1)
         print ("Predicted class : ", self.predicted_output)
         self.common_param.final_result_set.append(self.predicted_output)
@@ -339,7 +374,7 @@ class OutputLayer(object):
                 self.neurons[i].gradient += - (1 - self.neurons[i].output_value)*self.dSigmoid(self.neurons[i].output_value)
             else:
                 self.neurons[i].gradient += - (0 - self.neurons[i].output_value)*self.dSigmoid(self.neurons[i].output_value)
-
+            
         dendron_index = 0
         for i in range(0,len(self.neurons)):
             for j in range(0,len(input_layer.neurons)):
@@ -352,7 +387,12 @@ class OutputLayer(object):
             for j in range(0,len(input_layer.neurons)):
                 self.dendrons[dendron_index].weight -= self.common_param.learning_rate * (input_layer.neurons[j].output_value*(input_layer.neurons[j].gradient/self.common_param.batch_size))
                 dendron_index += 1
-
+                
+    """Updating the bias"""
+    def bias_updation(self):
+        for i in range(0,len(self.neurons)):
+            self.neurons[i].bias -= self.common_param.learning_rate*(self.neurons[i].gradient/self.common_param.batch_size)
+            
     """Defining the classifier function"""
     def softmax(self,neuron_value):
         """Initializing the required parameters"""

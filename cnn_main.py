@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from cnn_load_data import *
 from cnn_parameters import *
 from cnn_core_model import *
+
 """Loading the data"""
 common_param = Parameters()
 training_set,validation_set,test_set,test_truth_set = load_data(common_param)
@@ -39,15 +40,16 @@ for i in range(0,input_shape[0]):
 """
 
 """Training the network with the training set"""
-#training_set,validation_set = shuffle_in_order_of_class(training_set,validation_set, common_param)
-
-while (error > common_param.minimum_error and epoch < 25):
+training_set,validation_set = shuffle_in_order_of_class(training_set,validation_set, common_param)
+while (error > common_param.minimum_error and epoch < 15):
     error = 0.0
     epoch += 1
     error_batch_list = []
     batch_list = []
     #shuffle_in_unison(training_set,validation_set)
     #shuffle_in_order_of_class(training_set,validation_set)
+    np.flip(training_set,axis=1)
+    np.flip(validation_set,axis=1)
     print("epoch %d initiated:" % epoch)
     for batch in range(0,input_shape[0],common_param.batch_size):
         #Calling the gradient descent method
@@ -74,7 +76,7 @@ print (round(time.time() - start_time))
 
 """Testing the neural network"""
 correct_predict_count = 0
-index = 0
+index = count = 0
 common_param.final_result_set[:] = []
 #shuffle_in_unison(test_set,test_truth_set)
 #shuffle_in_order_of_class(test_set,test_truth_set)
@@ -86,12 +88,13 @@ while (index < test_set.shape[0]):
         print ("Actual Output : " , test_truth_set[index])
         if(net.layers[-1].predicted_output == test_truth_set[index]):
             correct_predict_count += 1
+        count += 1
     else:
         common_param.final_result_set.append(0)
     index += 1
 
 """Calculating the accuracy"""
-accuracy = (correct_predict_count / index)*100
+accuracy = (correct_predict_count / count)*100
 print ("Correct Predict count : " , correct_predict_count)
 print ("Accuracy : ",accuracy)
 

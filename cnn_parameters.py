@@ -7,7 +7,7 @@ class Parameters(object):
         self.x_axis = 0
         self.y_axis = 0
         self.no_of_classes = 9
-        self.count_of_each_class = 30
+        self.count_of_each_class = 200
         self.learning_rate = 0.01
         self.momentum_rate = 0.1
         self.epochs = 30
@@ -24,8 +24,8 @@ class Parameters(object):
         self.pooling_layer_size = 0
         self.fully_connected_layer_size = 100
         self.output_layer_size = self.no_of_classes
-        self.weight_minimum_limit = -0.1
-        self.weight_maximum_limit = 0.1
+        self.weight_minimum_limit = -0.05
+        self.weight_maximum_limit = 0.05
         self.final_result_set = []
 
     def initialize_layer_parameters(self,input_shape):
