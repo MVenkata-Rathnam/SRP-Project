@@ -15,7 +15,7 @@ class Parameters(object):
         self.padding = 0
         self.batch_size = 10
         self.minimum_error = 0.005
-        self.maximum_iteration = 500
+        self.maximum_iteration = 27000
         self.input_layer_size = 0
         self.convolution_kernel_size = 0
         self.no_of_filters = 20

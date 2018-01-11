@@ -110,10 +110,13 @@ def load_data(common_param):
     for i in range(0,data_set_shape_tuple[0]):
         for j in range(0,data_set_shape_tuple[1]):
             temp = data_set[i][j]
-            min_val = float(np.amin(data_set[i][j]))
-            max_val = float(np.amax(data_set[i][j]))
+            #min_val = float(np.amin(data_set[i][j]))
+            #max_val = float(np.amax(data_set[i][j]))
+            mean = np.mean(data_set[i][j])
+            std_dev = np.std(data_set[i][j])
             for k in range(0,data_set_shape_tuple[2]):
-                data_set[i][j][k] = ((data_set[i][j][k] - ((max_val + min_val)/2))/((max_val - min_val)/2))
+                #data_set[i][j][k] = ((data_set[i][j][k] - ((max_val + min_val)/2))/((max_val - min_val)/2))
+                data_set[i][j][k] = (data_set[i][j][k] - mean)/std_dev
                 
     row_count_1 = 0
     row_count_2 = 0

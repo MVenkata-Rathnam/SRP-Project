@@ -40,16 +40,16 @@ for i in range(0,input_shape[0]):
 """
 
 """Training the network with the training set"""
-training_set,validation_set = shuffle_in_order_of_class(training_set,validation_set, common_param)
+#training_set,validation_set = shuffle_in_order_of_class(training_set,validation_set, common_param)
 while (error > common_param.minimum_error and epoch < 15):
     error = 0.0
     epoch += 1
     error_batch_list = []
     batch_list = []
-    #shuffle_in_unison(training_set,validation_set)
+    shuffle_in_unison(training_set,validation_set)
     #shuffle_in_order_of_class(training_set,validation_set)
-    np.flip(training_set,axis=1)
-    np.flip(validation_set,axis=1)
+    #np.flip(training_set,axis=1)
+    #np.flip(validation_set,axis=1)
     print("epoch %d initiated:" % epoch)
     for batch in range(0,input_shape[0],common_param.batch_size):
         #Calling the gradient descent method
@@ -70,6 +70,9 @@ while (error > common_param.minimum_error and epoch < 15):
     epoch_list.append(epoch)
     print ("Epoch %d over" % epoch)
     plt.plot(epoch_list,error_list)
+    plt.ylabel('cost function')
+    plt.xlabel('Epoch')
+    plt.title('Cost function Analysis')
     plt.show()
     
 print (round(time.time() - start_time))
